@@ -7,6 +7,7 @@
 
 body {
     background-color: #f5f5f5;
+    padding-bottom: 50px;
 }
 
 h2 {
@@ -33,20 +34,29 @@ p {
     color: #666;
 }
 
+main {
+    /* padding: 0 15rem; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 header {
     display: flex;
     justify-content: center;
     width: 100%;
+    height: 6.25rem;
     background-color: #fff;
     border-bottom: 1px solid #bbb;
     cursor: default;
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 #header-wrapper {
     width: 824px;
-    height: 6.25rem;
     /* padding: 0 15rem; */
-    width: 824px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -67,13 +77,6 @@ header button:hover {
     transform: translateY(-1px);
     cursor: pointer;
     background-color: #1f69bd;
-}
-
-main {
-    /* padding: 0 15rem; */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 #event-list {
@@ -126,7 +129,7 @@ main {
     margin-top: 0.5rem;
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(5, auto);
+    grid-template-columns: auto auto auto;
     background-color: #fff;
     padding: 2.5rem;
     border-radius: 10px;
@@ -155,6 +158,43 @@ main {
     width: 2px;
 }
 
-/* #total-count h2 {
-    font-size: 4rem;
-} */
+@media screen and (max-width: 800px) {
+    header {
+        height: 4.5rem;
+        padding: 0 2rem;
+    }
+
+    #info-wrapper {
+        display: flex;
+        flex-direction: column-reverse;
+        padding: 0 2rem;
+    }
+
+    #key-insights {
+        width: 100%;
+    }
+
+    #insights-box {
+        grid-template-columns: auto;
+        padding-bottom: 0.5rem; 
+        /* this makes the effective padding 40px for everything */
+    }
+
+    #insights-box h4 {
+        font-size: 1.25rem;
+    }
+
+    .event-box {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .event-box h5 {
+        grid-column: span 2;
+    }
+
+    .event-stars {
+        justify-self: right;
+    }
+}
