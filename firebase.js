@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"
-import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"
-// import { getFirestore, collection, addDoc, doc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js"
+import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, 
+    onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"
 
 // Your web app's Firebase configuration
@@ -20,77 +20,44 @@ const auth = getAuth(app)
 // const db = getFirestore(app)
 const db = getDatabase(app)
 
-setPersistence(auth, browserLocalPersistence).then(() => console.log("set to local"))
-
-// document.addEventListener("DOMContentLoaded", _ => {
-//     const user = auth.currentUser
-//     console.log("user", user)
-//     if (user) {
-//         console.log("logged in")
-//     }
-//     else {
-//         console.log("not logged in")
-//     }
-// })
+setPersistence(auth, browserLocalPersistence)
+// .then(() => console.log("set to local"))
 
 let eventData = ref(db, "events")
 console.log(eventData)
 
-let userCredentials
-
-let data = {
-    12345678: {
-        user: {
-            email: "lartan18@gmail.com",
-            id: "1F2PRglfdXTEhwww7g5b2V34JGk2"
-        },
-        stars: 4,
-        subject: "ITGK"
-    }
-}
-
-// addDoc(collection(db, "events"), object)
-
-// function writeData() {
-//     set(ref(db, object))
-// }
-
-set(ref(db, "events"), data)
-    .then(() => {
-        console.log("data uploaded")
-    })
-    .catch(() => {
-        console.log("data not uploaded")
-    })
-
 onAuthStateChanged(auth, (user) => {
-    console.log("user", user)
+    console.log("User: \n", user)
     if (user) {
-        console.log(user.metadata.createdAt)
-        userCredentials = user
+        console.log("user signed in")
+        showCreateEvent()
     }
     else {
-        console.log("dont think youre logged in")
+        showLogin()
     }
 })
 
 const loginEmailPassword = async () => {
-    loginError.classList.add("hidden")
+    loginError.classList.add("hidden-warning")
     try {
         const loginEmail = emailInput.value
         const loginPassword = passwordInput.value
         userCredentials = await signInWithEmailAndPassword(auth, loginEmail, loginPassword)
-        console.log(userCredentials.user)
-
+        
+        // console.log("success")
         emailInput.value = passwordInput.value = ""
+        // console.log(userCredentials.user)
     }
     catch {
-        console.log(userCredentials.user)
-        loginError.classList.remove("hidden")
+        loginDialog.style.display = "none"
+        // console.log(userCredentials.user)
+        loginError.classList.remove("hidden-warning")
     }
-    console.log(userCredentials.user)
-    // writeData()
+    // console.log(userCredentials.user)
 }
 
+const signOutBtn = document.querySelector("#sign-out-btn")
+
+signOutBtn.addEventListener("click", _ => signOut(auth))
+
 loginBtn.addEventListener("click", loginEmailPassword)
-// loginBtn.addEventListener("click", _ => signOut(auth))

@@ -9,18 +9,42 @@
     <link rel="stylesheet" href="style.css">
     <script src="ui.js" defer></script>
     <script src="firebase.js" type="module" defer></script>
+    <script src="handleDatabase.js" type="module" defer></script>
     <title>Epsilon</title>
 </head>
 <body>
     <main>
+        <dialog id="create-event-popup" style="">
+            <div id="create-event-dialog">
+                <h3>Register event</h3>
+                <form>
+                    <label for="title">Title <span id="required-label">(required)</span></label>
+                    <input type="text" name="title" id="title" required>
+                    <label for="description">Description</label>
+                    <textarea name="description" id="description"></textarea>
+                    <label for="subject">Subject <span id="required-label">(required)</span></label>
+                    <input type="text" name="subject" id="subject" required>
+                    <label>Rating <span id="required-label">(required)</span></label>
+                    <div id="rating-div">
+                        <input type="radio" class="star" name="star-rating" required>
+                        <input type="radio" class="star" name="star-rating">
+                        <input type="radio" class="star" name="star-rating">
+                        <input type="radio" class="star" name="star-rating">
+                        <input type="radio" class="star" name="star-rating">
+                    </div>
+                    <!-- need to add date picker -->
+                    <input type="submit" value="Submit">
+                </form>
+            </div>
+        </dialog>
         <dialog id="login-popup">
-            <div id="dialog">
+            <div id="login-dialog">
                 <h3>Welcome</h3>
                 <label for="email-input">Email</label>
-                <input type="text" id="email-input" name="email">
+                <input type="text" id="email-input" name="email" autocomplete="email">
                 <label for="password-input">Password</label>
-                <input type="text" id="password-input" name="password">
-                <p class="hidden" id="login-error">Wrong username or password!</p>
+                <input type="password" id="password-input" name="password" autocomplete="current-password">
+                <p class="hidden-warning" id="login-error">Wrong username or password!</p>
                 <button id="login-button">Log in</button>
                 <button id="login-close">Close</button>
             </div>
@@ -28,7 +52,11 @@
         <header>
             <div id="header-wrapper">
                 <h2>Epsilon</h2>
-                <button id="login-cta">Log in</button>
+                <ul>
+                    <li><button id="sign-out-btn" class="hidden">Sign out</button></li>
+                    <li><button id="create-event-cta" class="hidden">Create event</button></li>
+                    <li class="hidden"><button id="login-cta">Log in</button></li>
+                </ul>
             </div>
         </header>
         
