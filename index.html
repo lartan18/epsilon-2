@@ -7,23 +7,37 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" type="module" defer></script>
+    <script src="ui.js" defer></script>
+    <script src="firebase.js" type="module" defer></script>
     <title>Epsilon</title>
 </head>
 <body>
     <main>
+        <dialog id="login-popup">
+            <div id="dialog">
+                <h3>Welcome</h3>
+                <label for="email-input">Email</label>
+                <input type="text" id="email-input" name="email">
+                <label for="password-input">Password</label>
+                <input type="text" id="password-input" name="password">
+                <p class="hidden" id="login-error">Wrong username or password!</p>
+                <button id="login-button">Log in</button>
+                <button id="login-close">Close</button>
+            </div>
+        </dialog>
         <header>
             <div id="header-wrapper">
                 <h2>Epsilon</h2>
-                <button>Add event</button>
+                <button id="login-cta">Log in</button>
             </div>
         </header>
+        
         <div id="info-wrapper">
             <div id="latest-events">
                 <h3>Latest events</h3>
                 <div id="event-list">
                     <div class="event-box">
-                        <h5>Fri 10.56 (example)</h5>
+                        <h5>Question <span class="detitle">- 09:43</span></h5>
                         <p>ITGK</p>
                         <div class="event-stars">
                             <img src="images/star-filled.svg" alt="Filled star">
@@ -35,8 +49,8 @@
                         </div>
                     </div>
                     <div class="event-box">
-                        <h5>Fri 10.56 (example)</h5>
-                        <p>ITGK</p>
+                        <h5>Question</h5>
+                        <p>09:43</p>
                         <div class="event-stars">
                             <img src="images/star-filled.svg" alt="Filled star">
                             <img src="images/star-filled.svg" alt="Filled star">
@@ -47,7 +61,7 @@
                         </div>
                     </div>
                     <div class="event-box">
-                        <h5>Fri 10.56 (example)</h5>
+                        <h5>Question</h5>
                         <p>ITGK</p>
                         <div class="event-stars">
                             <img src="images/star-filled.svg" alt="Filled star">
