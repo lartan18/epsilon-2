@@ -9,6 +9,8 @@ const emailInput = document.querySelector("#email-input")
 const passwordInput = document.querySelector("#password-input")
 const loginBtn = document.querySelector("#login-button")
 const loginError = document.querySelector("#login-error")
+const descriptionInput = document.querySelector("#description-input")
+const subjectInput = document.querySelector("#subject-input")
 
 const titleInput = document.querySelector("#title-input")
 const titleInputHTML = document.getElementById("title-input")
@@ -71,7 +73,6 @@ function showCreateEvent() {
     signOutBtn.classList.remove("hidden")
     createEventCTA.classList.remove("hidden")
     loginCTA.parentElement.classList.add("hidden")
-    console.log("create event")
 }
 
 loginCTA.addEventListener("click", _ => loginDialog.style.display = "flex")
@@ -99,6 +100,14 @@ createEventCTA.addEventListener("click", _ => {
 
     dateInput.value = `${year}-${month}-${day}`;
     timeInput.value = `${hours}:${minutes}`;
+
+    starRating.forEach(star => {
+        star.innerText = nofillStar
+    })
+
+    descriptionInput.value = ""
+    titleInput.value = "Question"
+    subjectInput.value = ""
 })
 
 createEventDialog.addEventListener("click", (e) => {
