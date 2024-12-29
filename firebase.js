@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"
 import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, 
     onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -14,11 +14,58 @@ const firebaseConfig = {
   databaseURL: "https://epsilon-513e7-default-rtdb.europe-west1.firebasedatabase.app"
 }
 
+submitEvent.addEventListener("click", (e) => {
+    e.preventDefault()
+    // try {
+        const timestamp = new Date(`${dateInput.value}T${timeInput.value}:00`).getTime()
+        set(ref(db, "events/"+timestamp), createEntry(globalUser.email, globalUser.uid, {stars: selectedRating ? selectedRating : "", description: "brrr"}))
+        console.log(1)
+    // }
+    // catch {
+    //     ""
+    // }
+    // console.log(createEntry(, globalUser.email, globalUser.uid, 4))
+})
+
+function createEntry(email, userID, optionals) {
+    const obj = {
+        // time: time,
+        user: {
+            email: email,
+            id: userID
+        },
+        subject: subject,
+    }
+
+    if (optionals["description"].trim() !== "") {
+        obj["description"] = optionals["description"]
+    }
+    if (optionals["stars"]) {
+        obj["stars"] = optionals["stars"]
+    }
+
+    return obj
+}
+
+async function getData() {
+    let retrieved
+
+    await get(ref(db, "events"))
+        .then((snapshot) => {
+            retrieved = snapshot.val()
+        })
+
+    return retrieved
+}
+
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 // const db = getFirestore(app)
 const db = getDatabase(app)
+
+console.log(await getData())
 
 setPersistence(auth, browserLocalPersistence)
 // .then(() => console.log("set to local"))
@@ -26,10 +73,12 @@ setPersistence(auth, browserLocalPersistence)
 let eventData = ref(db, "events")
 console.log(eventData)
 
+let globalUser
+
 onAuthStateChanged(auth, (user) => {
-    console.log("User: \n", user)
     if (user) {
-        console.log("user signed in")
+        console.log("user signed in:", user)
+        globalUser = user
         showCreateEvent()
     }
     else {

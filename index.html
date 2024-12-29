@@ -17,23 +17,34 @@
         <dialog id="create-event-popup" style="">
             <div id="create-event-dialog">
                 <h3>Register event</h3>
-                <form>
-                    <label for="title">Title <span id="required-label">(required)</span></label>
-                    <input type="text" name="title" id="title" required>
-                    <label for="description">Description</label>
-                    <textarea name="description" id="description"></textarea>
-                    <label for="subject">Subject <span id="required-label">(required)</span></label>
-                    <input type="text" name="subject" id="subject" required>
-                    <label>Rating <span id="required-label">(required)</span></label>
-                    <div id="rating-div">
-                        <input type="radio" class="star" name="star-rating" required>
-                        <input type="radio" class="star" name="star-rating">
-                        <input type="radio" class="star" name="star-rating">
-                        <input type="radio" class="star" name="star-rating">
-                        <input type="radio" class="star" name="star-rating">
+                <form id="create-event-form">
+                    <label for="title-input">Title <span id="required-label">(required)</span></label>
+                    <input type="text" name="title" id="title-input" value="Question" required>
+                    <label for="description-input">Description</label>
+                    <textarea name="description" id="description-input" rows="3"></textarea>
+                    <label for="time-input">Time & date <span id="required-label">(required)</span></label>
+                    <div id="time-and-date">
+                        <input type="time" id="time-input" value="12:00">
+                        <input type="date" name="date" id="date-input">
                     </div>
-                    <!-- need to add date picker -->
-                    <input type="submit" value="Submit">
+                    <label for="subject">Subject</label>
+                    <input type="text" name="subject" id="subject">
+                    <label for="star1">Rating</label>
+                    <div id="rating-div">
+                        <!-- <input type="radio" class="star" name="star-rating" id="star1" required>
+                        <label for="star1" title="5 stars"><img src="images/star-filled.svg" style="fill: green" alt=""></label>
+                        <input type="radio" class="star" name="star-rating">
+                        <input type="radio" class="star" name="star-rating">
+                        <input type="radio" class="star" name="star-rating">
+                        <input type="radio" class="star" name="star-rating"> -->
+                        
+                        <p class="star" id="star1">☆</p>
+                        <p class="star" id="star2">☆</p>
+                        <p class="star" id="star3">☆</p>
+                        <p class="star" id="star4">☆</p>
+                        <p class="star" id="star5">☆</p>
+                    </div>
+                    <input type="submit" value="Submit" id="submit-event-btn">
                 </form>
             </div>
         </dialog>
@@ -112,7 +123,9 @@
                             <p>(3)</p>
                         </div>
                     </div>
+                
                 </div>
+                <a href="#">View all</a>
             </div>
             <div id="key-insights">
                 <h3>Key insights</h3>

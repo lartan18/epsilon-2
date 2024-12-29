@@ -1,4 +1,6 @@
 import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"
+import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, 
+    onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"
 
 function uploadData(toUpload) {
     set(ref(db, "events"), toUpload)
@@ -20,6 +22,8 @@ async function getData() {
 
     return retrieved
 }
+
+
 
 function createEntry(time, email, userID, stars, subject="Unknown", description="") {
     const obj = {
@@ -43,6 +47,7 @@ function createEntry(time, email, userID, stars, subject="Unknown", description=
 console.log("number =", Number(Object.keys(createEntry(1234, 1234, 1234, 1234, 1234, "   "))))
 
 const db = getDatabase()
+// const auth = getAuth()
 
 let dbData = ref(db, "events")
 

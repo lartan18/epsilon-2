@@ -16,6 +16,7 @@
     --text-color: #000000;
     --text-hover-color: #262b30;
     --p-color: #666;
+    --star-color: #fca91d;
 }
 
 body {
@@ -45,6 +46,18 @@ h5 {
 p {
     font-size: 0.75rem;
     color: var(--p-color);
+}
+
+a {
+    font-size: 0.75rem;
+    color: var(--p-color);
+    /* margin: 0.5rem; */
+    transform: none;
+    padding: 0.5rem;
+    box-sizing: inherit;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 main {
@@ -113,7 +126,8 @@ header ul li button:hover {
 #event-list {
     display: flex;
     margin-top: 8px;
-    gap: 1rem;
+    /* gap: 1rem; */
+    justify-content: space-between;
     flex-wrap: wrap;
     /* width is 200px * box amount + 8px * box amount-1 */
 }
@@ -307,6 +321,26 @@ input[type="submit"] {
 #required-label {
     font-weight: normal;
     color: var(--p-color)
+}
+
+#rating-div {
+    display: flex;
+    gap: 0.15rem;
+}
+
+#rating-div p {
+    font-size: 1.75rem;
+    transform: translateY(-0.5rem);
+    color: var(--star-color);
+    font-weight: 500;
+    margin-bottom: -0.5rem;
+    transition: 0.2s;
+    user-select: none;
+}
+
+#rating-div p:hover {
+    cursor: pointer;
+    transform: translateY(calc(-0.5rem - 3px));
 }
 
 @media screen and (max-width: 800px) {
