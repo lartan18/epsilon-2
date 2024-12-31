@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"
 import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, 
-    onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"
-import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"
+    onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"
+import { getDatabase, ref, get, set, onValue, child } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,15 +16,16 @@ const firebaseConfig = {
 
 submitEvent.addEventListener("click", (e) => {
     e.preventDefault()
-    // try {
+    try {
         const timestamp = new Date(`${dateInput.value}T${timeInput.value}:00`).getTime()
-        set(ref(db, "events/"+timestamp), createEntry(globalUser.email, globalUser.uid, {stars: selectedRating ? selectedRating : "", description: "brrr"}))
-        console.log(1)
-    // }
-    // catch {
-    //     ""
-    // }
-    // console.log(createEntry(, globalUser.email, globalUser.uid, 4))
+        // if () {
+        //     set(ref(db, "events/"+timestamp), createEntry(globalUser.email, globalUser.uid, {stars: selectedRating ? selectedRating : "", description: "brrr"}))
+        //     console.log("Event added")
+        // }
+    }
+    catch (error) {
+        console.log(error)
+    }
 })
 
 function createEntry(email, userID, optionals) {
@@ -33,15 +34,15 @@ function createEntry(email, userID, optionals) {
         user: {
             email: email,
             id: userID
-        },
-        subject: subject,
+            // need to find way to make usernames
+        }
     }
 
     if (optionals["description"].trim() !== "") {
         obj["description"] = optionals["description"]
     }
     if (optionals["stars"]) {
-        obj["stars"] = optionals["stars"]
+        obj["stars"] = [optionals["stars"]]
     }
 
     return obj
@@ -65,13 +66,10 @@ const auth = getAuth(app)
 // const db = getFirestore(app)
 const db = getDatabase(app)
 
-console.log(await getData())
+// console.log(await getData())
 
 setPersistence(auth, browserLocalPersistence)
 // .then(() => console.log("set to local"))
-
-let eventData = ref(db, "events")
-console.log(eventData)
 
 let globalUser
 
@@ -84,6 +82,15 @@ onAuthStateChanged(auth, (user) => {
     else {
         showLogin()
     }
+})
+
+let dbKeys, dbData
+
+get(ref(db, "events")).then ((snapshot) => {
+    dbData = snapshot.val()
+    dbKeys = Object.keys(dbData)
+    totalCountDisplay.innerText = dbKeys.length + LEGACY_COUNT
+    console.log("wwww:", dbData)
 })
 
 const loginEmailPassword = async () => {
@@ -110,3 +117,5 @@ const signOutBtn = document.querySelector("#sign-out-btn")
 signOutBtn.addEventListener("click", _ => signOut(auth))
 
 loginBtn.addEventListener("click", loginEmailPassword)
+
+displayEvents(true)

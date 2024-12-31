@@ -7,9 +7,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="ui.js" defer></script>
-    <script src="firebase.js" type="module" defer></script>
-    <script src="handleDatabase.js" type="module" defer></script>
+    <script src="ui.js" type="module" defer></script>
+    <!-- <script src="firebase.js" type="module" defer></script> -->
+    <!-- <script src="handleDatabase.js" type="module" defer></script> -->
     <title>Epsilon</title>
 </head>
 <body>
@@ -29,20 +29,13 @@
                     </div>
                     <label for="subject-input">Subject</label>
                     <input type="text" name="subject" id="subject-input">
-                    <label for="star1">Rating</label>
-                    <div id="rating-div">
-                        <!-- <input type="radio" class="star" name="star-rating" id="star1" required>
-                        <label for="star1" title="5 stars"><img src="images/star-filled.svg" style="fill: green" alt=""></label>
-                        <input type="radio" class="star" name="star-rating">
-                        <input type="radio" class="star" name="star-rating">
-                        <input type="radio" class="star" name="star-rating">
-                        <input type="radio" class="star" name="star-rating"> -->
-                        
-                        <p class="star" id="star1">☆</p>
-                        <p class="star" id="star2">☆</p>
-                        <p class="star" id="star3">☆</p>
-                        <p class="star" id="star4">☆</p>
-                        <p class="star" id="star5">☆</p>
+                    <legend>Rating</legend>
+                    <div class="rating-div">
+                        <p class="star" data-starnum="1">☆</p>
+                        <p class="star" data-starnum="2">☆</p>
+                        <p class="star" data-starnum="3">☆</p>
+                        <p class="star" data-starnum="4">☆</p>
+                        <p class="star" data-starnum="5">☆</p>
                     </div>
                     <input type="submit" value="Submit" id="submit-event-btn">
                 </form>
@@ -60,6 +53,8 @@
                 <button id="login-close">Close</button>
             </div>
         </dialog>
+        <dialog id="show-event-popup"></dialog>
+
         <header>
             <div id="header-wrapper">
                 <h2>Epsilon</h2>
@@ -72,10 +67,30 @@
         </header>
         
         <div id="info-wrapper">
+            
+            <div id="key-insights">
+                <h3>Key insights</h3>
+                <div id="insights-box">
+                    <div id="weekly-average">
+                        <h4>Last week</h4>
+                        <h2>173</h2>
+                    </div>
+                    <!-- <span class="separator"></span> -->
+                    <div id="total-count">
+                        <h4>Total events</h4>
+                        <h2 id="total-count-display">...</h2>
+                    </div>
+                    <!-- <span class="separator"></span> -->
+                    <div id="latest-contributor">
+                        <h4>Latest contributor</h4>
+                        <h2>Kristoffer</h2>
+                    </div>
+                </div>
+            </div>
             <div id="latest-events">
-                <h3>Latest events</h3>
+            <h3>All events</h3>
                 <div id="event-list">
-                    <div class="event-box">
+                    <!-- <div class="event-box">
                         <h5>Question <span class="detitle">- 09:43</span></h5>
                         <p>ITGK</p>
                         <div class="event-stars">
@@ -120,31 +135,12 @@
                             <img src="images/star-filled.svg" alt="Filled star">
                             <img src="images/star-nofill.svg" alt="Unfilled star">
                             <img src="images/star-nofill.svg" alt="Unfilled star">
-                            <p>(3)</p>
+                            <p>No ratings yet</p>
                         </div>
-                    </div>
+                    </div> -->
                 
                 </div>
-                <a href="#">View all</a>
-            </div>
-            <div id="key-insights">
-                <h3>Key insights</h3>
-                <div id="insights-box">
-                    <div id="weekly-average">
-                        <h4>Weekly average</h4>
-                        <h2>17.3</h2>
-                    </div>
-                    <!-- <span class="separator"></span> -->
-                    <div id="total-count">
-                        <h4>Total events</h4>
-                        <h2>...</h2>
-                    </div>
-                    <!-- <span class="separator"></span> -->
-                    <div id="latest-contributor">
-                        <h4>Latest contributor</h4>
-                        <h2>Kristoffer</h2>
-                    </div>
-                </div>
+                <!-- <div id="event-expand-wrapper"><a href="#">View all</a></div> -->
             </div>
         </div>
     </main>
