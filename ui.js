@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebas
 import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, 
     onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"
 import { getDatabase, ref, get, set, onValue, child } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"
-
+console.log("test")
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDI_fvum87X09Abqdt14dykBjh9qPuIPuc",
