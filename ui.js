@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"
 import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, 
-    onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"
+    onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"
 import { getDatabase, ref, get, set, onValue, child } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"
 
 // Your web app's Firebase configuration
@@ -58,17 +58,27 @@ let selectedRating = false
 
 submitEvent.addEventListener("click", (e) => {
     e.preventDefault()
-    try {
-        const timestamp = new Date(`${dateInput.value}T${timeInput.value}:00`).getTime()
-        set(ref(db, "events/"+timestamp), createEntry(globalUser.email, globalUser.uid, titleInput.value, 
-            {stars: selectedRating ? selectedRating : [], description: descriptionInput.value.trim() ? descriptionInput.value : "",
-                subject: subjectInput.value.trim() ? subjectInput.value : ""
+    const timestamp = new Date(`${dateInput.value}T${timeInput.value}:00`).getTime()
+    if (titleInput.value) {
+        try {
+            // console.log(checkTime(timestamp))
+            if (checkTime(timestamp)[0] || (!checkTime(timestamp)[0] && confirm(checkTime(timestamp)[1]))) {
+                set(ref(db, "events/"+timestamp), createEntry(globalUser.email, globalUser.uid, titleInput.value, 
+                    {stars: selectedRating ? selectedRating : [], description: descriptionInput.value.trim() ? descriptionInput.value : "",
+                        subject: subjectInput.value.trim() ? subjectInput.value : ""
+                    }
+                )).then(() => {
+                    location.reload()
+                    console.log("Event added")
+                })
             }
-        ))
-        console.log("Event added")
+        }
+        catch (error) {
+            console.log(error)
+        }
     }
-    catch (error) {
-        console.log(error)
+    else {
+        alert("Title is required")
     }
 })
 
@@ -78,8 +88,7 @@ function createEntry(email, userID, title, optionals) {
         user: {
             email: email,
             id: userID
-            // need to,
-            // find way to make usernames
+            // need to find way to make usernames
         },
         title: title
     }
@@ -88,17 +97,37 @@ function createEntry(email, userID, title, optionals) {
         obj["description"] = optionals["description"]
     }
     if (optionals["stars"]) {
-        obj["stars"] = [optionals["stars"]] // turn this into an object with everyones ratings (lartan18@gmail.com: 5, x@y.z: 3)
+        console.log(globalUser)
+        obj["stars"] = {[globalUser.displayName]: optionals["stars"]} // turn this into an object with everyones ratings (lartan18@gmail.com: 5, x@y.z: 3)
         // let x = await get(ref(db, "events/1735594140000/stars"))
 
         // console.log(x.val())
         // set(ref(db, "events/1735594140000/stars"), x.val()+"2")
-    }
+    } 
     if (optionals["subject"]) {
         obj["subject"] = optionals["subject"]
     }
 
     return obj
+}
+
+function checkTime(timestamp) {
+    // returns two booleans, first is if there exists one event within one minute,
+    // second is outgoing message
+    if (timestamp in dbData) {
+        console.log(timestamp, dbData[timestamp])
+        console.log("already exists")
+        return [false, "There already exists an event at this time. Overwrite?"]
+    } 
+    else if (timestamp + 60000 in dbData) {
+        return [false, "There already exists an event 1 minute after this. Continue?"]
+    }
+    else if (timestamp - 60000 in dbData) {
+        return [false, "There already exists an event 1 minute before this. Continue?"]
+    }
+    else {
+        return [true, undefined]
+    }
 }
 
 async function getData() {
@@ -145,8 +174,25 @@ function displayEvents(showAll=true) {
                 returnHTML += "<div class='event-stars' style='justify-self: initial;'><p>No ratings yet</p>"
             } else {
                 returnHTML += "<div class='event-stars'>"
-                let averageRating = 3
-                let ratingCount = 4
+                let averageRating, ratingCount, totalSum
+                averageRating = ratingCount = totalSum = 0
+                if (typeof e.stars == "object") {
+                    for (const rating in e.stars) {
+                        // console.log(e)
+                        if (e.stars[rating]) {
+                            totalSum += Number(e.stars[rating])
+                            ratingCount += 1
+                        }
+                    }
+                    if (ratingCount > 0) {
+                        averageRating = totalSum / ratingCount
+                    }
+                    // else if () {
+                    //     // set(ref(db, `events/${dbKeys[i]}/stars`), "").then(() => location.reload())
+                    //     ref(db, `events/${dbKeys[i]}`).child("stars").remove()
+                    // }
+                    console.log(totalSum, ratingCount, averageRating)
+                }
                 for (let i = 0; i < 5; i++) {
                     if (i < averageRating) {
                         returnHTML += '<img src="images/star-filled.svg" alt="Filled star">'
@@ -173,8 +219,17 @@ let globalUser
 onAuthStateChanged(auth, (user) => {
     if (user) {
         console.log("user signed in:", user)
+        console.log(user.displayName)
+        if (!user.displayName) {
+            updateProfile(user, {
+                displayName: prompt("First name:")
+            }).then(() => {
+                console.log("updated")
+            })
+        }
+        console.log(user.displayName)
         globalUser = user
-        showCreateEvent()
+        showCreateEvent() // shows create event button, not create event popup
     }
     else {
         showLogin()
@@ -187,7 +242,7 @@ await get(ref(db, "events")).then ((snapshot) => {
     dbData = snapshot.val()
     dbKeys = Object.keys(dbData)
     totalCountDisplay.innerText = dbKeys.length + LEGACY_COUNT
-    console.log("wwww:", dbData)
+    console.log("Database data:", dbData)
 })
 
 //
@@ -197,14 +252,22 @@ await get(ref(db, "events")).then ((snapshot) => {
 //
 
 const loginEmailPassword = async () => {
+    console.log("triggered")
+    
     loginError.classList.add("hidden-warning")
     try {
         const loginEmail = emailInput.value
         const loginPassword = passwordInput.value
-        userCredentials = await signInWithEmailAndPassword(auth, loginEmail, loginPassword)
-        
+        // console.log("ooo")
+        signInWithEmailAndPassword(auth, loginEmail, loginPassword).then((user) => {
+            // console.log(user.user)
+            globalUser = user
+            location.reload()
+        })
+        // console.log("uuu")
         // console.log("success")
-        emailInput.value = passwordInput.value = ""
+        // emailInput.value = passwordInput.value = ""
+        
         // console.log(userCredentials.user)
     }
     catch {
@@ -313,6 +376,8 @@ createEventPopup.addEventListener("click", (e) => {
 
 const eventBoxes = document.querySelectorAll(".event-box")
 
+let refreshOnClose = false
+
 eventBoxes.forEach(box => {
     box.addEventListener("click", _ => {
         const time = box.dataset.boxtime
@@ -323,17 +388,86 @@ eventBoxes.forEach(box => {
             <h4>${boxdata.title}</h4>
             ${boxdata.subject ? `<h5>${boxdata.subject}</h5>` : "<h5>Unknown subject</h5>"}
             ${boxdata.description ? `<p>${boxdata.description}</p>` : ""}
-            NEED LOGIC HERE TO FIX STARS
-            ${boxdata.stars ? "stars go here" : '<div class="rating-div"><p class="star" data-starnum="1">☆</p><p class="star" data-starnum="2">☆</p><p class="star" data-starnum="3">☆</p><p class="star" data-starnum="4">☆</p><p class="star" data-starnum="5">☆</p></div>'}
             `
+
+            // if (globalUser.displayName in boxdata.stars) {
+            //     console.log("this exists, lezzgoo")
+            // } else {
+            //     console.log("sadge")
+            // }
+            let filledStars = 0
+            let userHasRated = false
+            let chosenStarCount
+            if (boxdata.stars && globalUser.displayName in boxdata.stars) {
+                filledStars = boxdata.stars[globalUser.displayName]
+                userHasRated = true
+            }
+
+            resultHTML += '<div class="rating-div" id="view-event-stars">'
+
+            for (let i = 0; i < 5; i++) {
+                if (filledStars > i) { // if 1 star, i = 0 fills first star, but not second. index offset
+                    resultHTML += `<p class="star" data-starnum="${i+1}">${filledStar}</p>`
+                } else {
+                    resultHTML += `<p class="star" data-starnum="${i+1}">${nofillStar}</p>`
+                }
+            }
+
+            resultHTML += "</div>"
+            
+            console.log(boxdata.stars)
+
+            // resultHTML += `${boxdata.stars ? "stars go here" : '<div class="rating-div"><p class="star" data-starnum="1">☆</p><p class="star" data-starnum="2">☆</p><p class="star" data-starnum="3">☆</p><p class="star" data-starnum="4">☆</p><p class="star" data-starnum="5">☆</p></div>'}`
             
             resultHTML += "</div>"
             showEventPopup.innerHTML = resultHTML
             showEventPopup.style.display = "flex"
             showEventPopup.addEventListener("click", (e) => {
                 if (e.target === showEventPopup) {
+                    console.log(boxdata)
                     showEventPopup.style.display = "none"
+                    if (refreshOnClose) {
+                        set(ref(db, `events/${time}/stars/${globalUser.displayName}`), Number(chosenStarCount)).then(() => location.reload())
+                    }
                 }
+            })
+
+            const eventStars = document.querySelectorAll("#view-event-stars .star")
+            eventStars.forEach(star => {
+                star.addEventListener("click", _ => {
+                    const starNum = star.dataset.starnum
+                    console.log(starNum, star)
+                    if (eventStars[starNum-1].innerText === nofillStar) {
+                        for (let i = 0; i < starNum; i++) {
+                            eventStars[i].innerText = filledStar
+                        }
+                        chosenStarCount = starNum
+                    }
+                    else if (eventStars[starNum-1].innerText === filledStar && (starNum == 5 || eventStars[starNum].innerText === nofillStar)) {
+                        for (let i = 0; i < starNum; i++) {
+                            eventStars[i].innerText = nofillStar
+                        }
+                        chosenStarCount = ""
+                    }
+                    else {
+                        for (let i = 0; i < 5; i++) {
+                            eventStars[i].innerText = nofillStar
+                        }
+                        for (let i = 0; i < starNum; i++) {
+                            eventStars[i].innerText = filledStar
+                        }
+                        chosenStarCount = ""
+                    }
+                    if (userHasRated && boxdata.stars[globalUser.displayName] != chosenStarCount) {
+                        refreshOnClose = true
+                    }
+                    else if (!userHasRated && boxdata.stars[globalUser.displayName] != chosenStarCount) {
+                        refreshOnClose = true
+                    }
+                    else if (!userHasRated) {
+                        refreshOnClose = false
+                    }
+                })
             })
         })
     })
