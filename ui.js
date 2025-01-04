@@ -1,7 +1,10 @@
+// bugs:
+// clicking 1 then deselecting, then closing an event will show 1 selected next time clicking the event
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"
 import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, 
     onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"
-import { getDatabase, ref, get, set, onValue, child } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"
+import { getDatabase, ref, get, set, onValue, child, remove } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js"
 console.log("test")
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -50,6 +53,8 @@ const showEventDialog = document.querySelector("#show-event-dialog")
 
 const submitEvent = document.querySelector("#submit-event-btn")
 
+const weeklyAverageDisplay = document.querySelector("#weekly-average-display")
+const latestContributorDisplay = document.querySelector("#latest-contributor-display")
 const totalCountDisplay = document.getElementById("total-count-display")
 const LEGACY_COUNT = 239
 
@@ -87,7 +92,8 @@ function createEntry(email, userID, title, optionals) {
         // time: time,
         user: {
             email: email,
-            id: userID
+            id: userID,
+            username: globalUser.displayName
             // need to find way to make usernames
         },
         title: title
@@ -128,17 +134,6 @@ function checkTime(timestamp) {
     else {
         return [true, undefined]
     }
-}
-
-async function getData() {
-    let retrieved
-
-    await get(ref(db, "events"))
-        .then((snapshot) => {
-            retrieved = snapshot.val()
-        })
-
-    return retrieved
 }
 
 function displayEvents(showAll=true) {
@@ -187,14 +182,20 @@ function displayEvents(showAll=true) {
                     if (ratingCount > 0) {
                         averageRating = totalSum / ratingCount
                     }
-                    // else if () {
-                    //     // set(ref(db, `events/${dbKeys[i]}/stars`), "").then(() => location.reload())
-                    //     ref(db, `events/${dbKeys[i]}`).child("stars").remove()
-                    // }
+                    else {
+                        // set(ref(db, `events/${dbKeys[i]}/stars`), "").then(() => location.reload())
+                        get(ref(db, `events/${dbKeys[i]}`)).then(snapshot => {
+                            if (snapshot.child("stars").exists()) {
+                                remove(ref(db, `events/${dbKeys[i]}/stars`))
+                                location.reload()
+                            }
+                        })
+                        
+                    }
                     console.log(totalSum, ratingCount, averageRating)
                 }
                 for (let i = 0; i < 5; i++) {
-                    if (i < averageRating) {
+                    if (i < averageRating - 0.5) { // 4.5 shows 4 stars, 4.6 shows 5
                         returnHTML += '<img src="images/star-filled.svg" alt="Filled star">'
                     }
                     else {
@@ -219,7 +220,6 @@ let globalUser
 onAuthStateChanged(auth, (user) => {
     if (user) {
         console.log("user signed in:", user)
-        console.log(user.displayName)
         if (!user.displayName) {
             updateProfile(user, {
                 displayName: prompt("First name:")
@@ -227,7 +227,7 @@ onAuthStateChanged(auth, (user) => {
                 console.log("updated")
             })
         }
-        console.log(user.displayName)
+        console.log("user logged in:",user.displayName)
         globalUser = user
         showCreateEvent() // shows create event button, not create event popup
     }
@@ -242,6 +242,8 @@ await get(ref(db, "events")).then ((snapshot) => {
     dbData = snapshot.val()
     dbKeys = Object.keys(dbData)
     totalCountDisplay.innerText = dbKeys.length + LEGACY_COUNT
+    weeklyAverageDisplay.innerText = "idfk"
+    latestContributorDisplay.innerText = dbData[dbKeys[dbKeys.length - 1]].user.username
     console.log("Database data:", dbData)
 })
 
@@ -252,7 +254,7 @@ await get(ref(db, "events")).then ((snapshot) => {
 //
 
 const loginEmailPassword = async () => {
-    console.log("triggered")
+    // console.log("triggered")
     
     loginError.classList.add("hidden-warning")
     try {
@@ -313,8 +315,9 @@ starRating.forEach(star => {
             for (let i = 0; i < starNum; i++) {
                 starRating[i].innerText = filledStar
             }
-            selectedRating = false
+            selectedRating = starNum
         }
+        console.log(selectedRating)
     })
 });
 
@@ -386,6 +389,7 @@ eventBoxes.forEach(box => {
             const boxdata = snapshot.val()[time]
             resultHTML += `
             <h4>${boxdata.title}</h4>
+            <p>Added by <b>${boxdata.user.username}<b></p>
             ${boxdata.subject ? `<h5>${boxdata.subject}</h5>` : "<h5>Unknown subject</h5>"}
             ${boxdata.description ? `<p>${boxdata.description}</p>` : ""}
             `
@@ -397,8 +401,8 @@ eventBoxes.forEach(box => {
             // }
             let filledStars = 0
             let userHasRated = false
-            let chosenStarCount
-            if (boxdata.stars && globalUser.displayName in boxdata.stars) {
+            let chosenStarCount = 1
+            if (boxdata.stars && globalUser && globalUser.displayName in boxdata.stars) {
                 filledStars = boxdata.stars[globalUser.displayName]
                 userHasRated = true
             }
@@ -406,15 +410,22 @@ eventBoxes.forEach(box => {
             resultHTML += '<div class="rating-div" id="view-event-stars">'
 
             for (let i = 0; i < 5; i++) {
-                if (filledStars > i) { // if 1 star, i = 0 fills first star, but not second. index offset
+                if (!globalUser) {
+                    if (boxdata.stars) {
+                        resultHTML += `<p class="star" data-starnum="${i+1}">${filledStar}</p>`
+                    } else {
+                        resultHTML += '<h5>No stars exist</h5>'
+                        break
+                    }
+                }
+                else if (filledStars > i) { // if 1 star, i = 0 fills first star, but not second. index offset
                     resultHTML += `<p class="star" data-starnum="${i+1}">${filledStar}</p>`
                 } else {
                     resultHTML += `<p class="star" data-starnum="${i+1}">${nofillStar}</p>`
                 }
             }
-
             resultHTML += "</div>"
-            
+        
             console.log(boxdata.stars)
 
             // resultHTML += `${boxdata.stars ? "stars go here" : '<div class="rating-div"><p class="star" data-starnum="1">☆</p><p class="star" data-starnum="2">☆</p><p class="star" data-starnum="3">☆</p><p class="star" data-starnum="4">☆</p><p class="star" data-starnum="5">☆</p></div>'}`
@@ -424,7 +435,7 @@ eventBoxes.forEach(box => {
             showEventPopup.style.display = "flex"
             showEventPopup.addEventListener("click", (e) => {
                 if (e.target === showEventPopup) {
-                    console.log(boxdata)
+                    // console.log(boxdata)
                     showEventPopup.style.display = "none"
                     if (refreshOnClose) {
                         set(ref(db, `events/${time}/stars/${globalUser.displayName}`), Number(chosenStarCount)).then(() => location.reload())
@@ -432,43 +443,52 @@ eventBoxes.forEach(box => {
                 }
             })
 
-            const eventStars = document.querySelectorAll("#view-event-stars .star")
-            eventStars.forEach(star => {
-                star.addEventListener("click", _ => {
-                    const starNum = star.dataset.starnum
-                    console.log(starNum, star)
-                    if (eventStars[starNum-1].innerText === nofillStar) {
-                        for (let i = 0; i < starNum; i++) {
-                            eventStars[i].innerText = filledStar
+            if (globalUser) {
+                const eventStars = document.querySelectorAll("#view-event-stars .star")
+                eventStars.forEach(star => {
+                    star.addEventListener("click", _ => {
+                        const starNum = star.dataset.starnum
+                        console.log(starNum, star)
+                        if (eventStars[starNum-1].innerText === nofillStar) {
+                            for (let i = 0; i < starNum; i++) {
+                                eventStars[i].innerText = filledStar
+                            }
+                            chosenStarCount = starNum
                         }
-                        chosenStarCount = starNum
-                    }
-                    else if (eventStars[starNum-1].innerText === filledStar && (starNum == 5 || eventStars[starNum].innerText === nofillStar)) {
-                        for (let i = 0; i < starNum; i++) {
-                            eventStars[i].innerText = nofillStar
+                        else if (eventStars[starNum-1].innerText === filledStar && (starNum == 5 || eventStars[starNum].innerText === nofillStar)) {
+                            for (let i = 0; i < starNum; i++) {
+                                eventStars[i].innerText = nofillStar
+                            }
+                            chosenStarCount = ""
                         }
-                        chosenStarCount = ""
-                    }
-                    else {
-                        for (let i = 0; i < 5; i++) {
-                            eventStars[i].innerText = nofillStar
+                        else {
+                            for (let i = 0; i < 5; i++) {
+                                eventStars[i].innerText = nofillStar
+                            }
+                            for (let i = 0; i < starNum; i++) {
+                                eventStars[i].innerText = filledStar
+                            }
+                            chosenStarCount = starNum
                         }
-                        for (let i = 0; i < starNum; i++) {
-                            eventStars[i].innerText = filledStar
+                        
+                        if (userHasRated && boxdata.stars[globalUser.displayName] != chosenStarCount) {
+                            refreshOnClose = true
                         }
-                        chosenStarCount = ""
-                    }
-                    if (userHasRated && boxdata.stars[globalUser.displayName] != chosenStarCount) {
-                        refreshOnClose = true
-                    }
-                    else if (!userHasRated && boxdata.stars[globalUser.displayName] != chosenStarCount) {
-                        refreshOnClose = true
-                    }
-                    else if (!userHasRated) {
-                        refreshOnClose = false
-                    }
+                        //  && globalUser && boxdata.stars[globalUser.displayName] != chosenStarCount
+                        else if (!userHasRated && chosenStarCount !== "") {
+                            console.log("!userHasRated && chosenStarCount !== ")
+                            set(ref(db, `events/${time}/stars/${globalUser.displayName}`), chosenStarCount)
+                            refreshOnClose = true
+                        }
+                        else {
+                            refreshOnClose = false
+                        }
+                    })
                 })
-            })
+            } else {
+                console.log("user doesnt exist")
+            }
+            
         })
     })
 })
