@@ -146,6 +146,7 @@ header ul li button:hover {
 
 .event-box {
     width: 100%;
+    max-width: 194px;
     background-color: var(--box-background);
     border: 1px solid var(--border-color);
     border-radius: 10px;
@@ -167,6 +168,7 @@ header ul li button:hover {
 .detitle {
     font-weight: normal;
     color: var(--p-color);
+    overflow-wrap: break-all;
 }
 
 .event-box img {
