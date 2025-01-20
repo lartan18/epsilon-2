@@ -104,7 +104,7 @@ function createEntry(email, userID, title, optionals) {
     }
     if (optionals["stars"]) {
         console.log(globalUser)
-        obj["stars"] = {[globalUser.displayName]: optionals["stars"]} // turn this into an object with everyones ratings (lartan18@gmail.com: 5, x@y.z: 3)
+        obj["stars"] = {[globalUser.displayName]: Number(optionals["stars"])} // turn this into an object with everyones ratings (lartan18@gmail.com: 5, x@y.z: 3)
         // let x = await get(ref(db, "events/1735594140000/stars"))
 
         // console.log(x.val())
@@ -385,10 +385,9 @@ eventBoxes.forEach(box => {
     box.addEventListener("click", _ => {
         const time = box.dataset.boxtime
         get(ref(db, "events"), time).then((snapshot) => {
-            let resultHTML = '<div id="show-event-dialog"><h3>Welcome</h3>'
             const boxdata = snapshot.val()[time]
+            let resultHTML = `<div id="show-event-dialog"><h3>${boxdata.title}</h3>`
             resultHTML += `
-            <h4>${boxdata.title}</h4>
             <p>Added by <b>${boxdata.user.username}<b></p>
             ${boxdata.subject ? `<h5>${boxdata.subject}</h5>` : "<h5>Unknown subject</h5>"}
             ${boxdata.description ? `<p>${boxdata.description}</p>` : ""}
